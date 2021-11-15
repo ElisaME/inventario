@@ -1,13 +1,33 @@
-import router from 'next/router';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/router'
+import Link from 'next/link'
 
-const addProduct = () => {
+const EditProduct = () => {
+  const router = useRouter()
+  const { id } = router.query
   const [product, setProduct] = useState({})
+  const [newProduct, setNewProduct] = useState({})
   const [imagePreview, setImagePreview] = useState('')
+
+  useEffect(() => {
+    getData()
+  }, [])
+
+  const getData = async () => {
+    try {
+      const res = await fetch(`https://radiant-ridge-01211.herokuapp.com/products/${id}`)
+      const data = await res.json()
+      setProduct(data.prod)
+      setNewProduct(data.prod)
+      setImagePreview(data.prod.image)
+    } catch (error) {
+      console.log('aquiii', error)
+    }
+  }
 
   const handleInput = (e) => {
     const {name, value} = e.target
-    setProduct(prevState => ({
+    setNewProduct(prevState => ({
       ...prevState,
       [name]:value
     }))
@@ -17,20 +37,15 @@ const addProduct = () => {
     const file = e.target.files[0]
     const preview =  URL.createObjectURL(file)
     setImagePreview(preview)
-    setProduct(prevState => ({
+    setNewProduct(prevState => ({
       ...prevState,
       "image_product":file
     }))
   }
 
-  useEffect(() => {
-    console.log(product)
-  }, [product])
-
-  const newProduct = async (e) => {
+  const editProduct = async (e) => {
     e.preventDefault()
-    const {name, description, price, stock, image_product } = product
-    console.log('fileeee', image_product)
+    const {name, description, price, stock, image_product } = newProduct
     try {
       const formData = new FormData();
       formData.append("name", name);
@@ -39,16 +54,9 @@ const addProduct = () => {
       formData.append("stock", stock);
       formData.append("image_product", image_product);
        
-      const res = await fetch('https://radiant-ridge-01211.herokuapp.com/createProduct', {
+      const res = await fetch(`https://radiant-ridge-01211.herokuapp.com/editProduct/${id}`, {
         method: 'POST',
         body:formData,
-        // body:JSON.stringify({
-        //   name,
-        //   description,
-        //   price,
-        //   stock,
-        //   image_product
-        // }),
       })
       const data = await res.json()
       console.log('dataaa', data)
@@ -62,8 +70,8 @@ const addProduct = () => {
 
   return (
     <div className="m-4 p-4 bg-white rounded-md w-full">
-      <p className="font-bold mb-2">Agregar Producto</p>
-      <form onSubmit={newProduct}>
+      <p className="font-bold mb-2">Producto: {product.name}</p>
+      <form onSubmit={editProduct}>
       <div class="flex flex-wrap -mx-3 mb-6">
         {/* Nombre del producto */}
         <div class="w-full md:w-1/2 px-3 mb-6 md:mb-0">
@@ -76,6 +84,7 @@ const addProduct = () => {
             type="text"
             placeholder="Ingresa el nombre del producto"
             name="name" onChange={handleInput}
+            value={newProduct.name}
             />
           {/* <p class="text-red-500 text-xs italic">Please fill out this field.</p */}
         </div>
@@ -90,6 +99,7 @@ const addProduct = () => {
             type="text"
             placeholder="Ingresa descripción del producto"
             name="description" onChange={handleInput}
+            value={newProduct.description}
             />
         </div>
         {/* Stock */}
@@ -103,6 +113,7 @@ const addProduct = () => {
             placeholder="Ingresa el stock del producto"
             type="number"
             name="stock" onChange={handleInput}
+            value={newProduct.stock}
             />
         </div>
         {/* Precio */}
@@ -116,6 +127,7 @@ const addProduct = () => {
             placeholder="Ingresa un precio para el producto"
             type="number"
             name="price" onChange={handleInput}
+            value={newProduct.price}
             />
         </div>
       </div>
@@ -124,7 +136,7 @@ const addProduct = () => {
           <div class="flex items-center justify-center w-1/4">
               <label class="flex flex-col w-full h-32 border-4 border-dashed hover:bg-gray-100 hover:border-gray-300 h-44">
                   <div class="flex flex-col items-center justify-center p-2">
-                    {imagePreview ? 
+                    {imagePreview? 
                     <img src={imagePreview} className="h-32"/>
                     :
                     <div>
@@ -151,4 +163,4 @@ const addProduct = () => {
   );
 };
 
-export default addProduct;
+export default EditProduct;

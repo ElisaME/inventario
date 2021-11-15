@@ -1,5 +1,8 @@
 import Link from 'next/link'
-export default function Products (){
+import { useEffect, useState } from 'react';
+
+function Products (props){
+  console.log('props:', props)
   return (
     <div class="flex-1">
       <section class="container mx-auto p-6">
@@ -48,4 +51,23 @@ export default function Products (){
       </section>
     </div>
   );
+}
+
+export default Products
+
+export async function getStaticProps() {
+  console.log('aquiiii')
+  // Call an external API endpoint to get posts.
+  // You can use any data fetching library
+  const res = await fetch('https://radiant-ridge-01211.herokuapp.com/products')
+  const productsData = await res.json()
+  console.log('aquiiii', productsData)
+
+  // By returning { props: { posts } }, the Blog component
+  // will receive `posts` as a prop at build time
+  return {
+    props: {
+      productsData,
+    },
+  }
 }
